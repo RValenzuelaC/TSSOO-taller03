@@ -161,12 +161,13 @@ int main(int argc, char **argv)
 	std::cout << "TiempodeLLenadoSecuencial: " << totalTimeSerial << "[ms]" << std::endl;
 	std::cout << "TiempodeLLenadoParalelo: " << totalTimefilled << "[ms]" << std::endl;
 	std::cout << "TiempodeLLenadoOpenMp: " << totalTimeOpmp  << "[ms]" << std::endl;
-    std::cout << "SpeedUp Etapa de Llenado: " << (double)totalTimeSerial/totalTimefilled << std::endl;
-
+    std::cout << "SpeedUp Etapa de Llenado Thr vs Serial: " << (double)totalTimeSerial/totalTimefilled << std::endl;
+	std::cout << "SpeedUp Etapa de Llenado Omp vs Serial : " << (double)totalTimeSerial/totalTimeOpmp << std::endl;
 	std::cout << "==========Tiempos de Sumado==========" << std::endl;
 	std::cout << "TiempoDeSumadoSecuencial: " << totalTimeSumSerial << "[ms]" << std::endl;
 	std::cout << "TiempoDeSumadoParalelo: " << totalTimeThread << "[ms]" << std::endl;
 	std::cout << "TiempoDeSumadoOpenMp: " << totalTimeOmp << "[ms]" << std::endl;
-    std::cout << "SpeedUp Etapa de Suma: " << (double)totalTimeSumSerial/totalTimeThread << std::endl;
+    std::cout << "SpeedUp Etapa de Suma Thr vs Serial: " << (double)totalTimeSumSerial/totalTimeThread << std::endl;
+	std::cout << "SpeedUp Etapa de Suma Omp vs Serial: " << (double)totalTimeSumSerial/totalTimeOmp << std::endl;
 	return (EXIT_SUCCESS);
 }
