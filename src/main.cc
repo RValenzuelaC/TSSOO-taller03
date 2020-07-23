@@ -67,8 +67,8 @@ int main(int argc, char **argv)
 	arreglo_s = new uint64_t[totalElementos];
 	auto start = std::chrono::high_resolution_clock::now();
 	llenadoAr(0, totalElementos, limiteInferior, limiteSuperior, 1);
-	auto end = std::chrono::high_resolution_clock::now();
-	auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+	auto end = std::chrono::system_clock::now();
+	std::chrono::duration<float, std::milli> elapsed= end - start;
 	auto totalTimeSerial = elapsed.count();
 
 	//--------------------------------------------------------llenado del arreglo paralelo---------------------------------------------------------
@@ -91,16 +91,21 @@ int main(int argc, char **argv)
 	auto totalTimefilled = duration.count();
 
 	//---------------------------------------------------------llenado openMP----------------------------------------------------------------------
-	start = std::chrono::system_clock::now();
+	
 	auto vector_l = new uint64_t[totalElementos];
+	std::random_device device;
+	std::mt19937 rng(device());
+	std::uniform_int_distribution<uint32_t> nRandom(limiteInferior, limiteSuperior);
+	start = std::chrono::system_clock::now();
 	#pragma omp parallel for  num_threads(numThreads)
 	for(size_t i = 0; i < totalElementos; ++i){	
-		vector_l[i] = arreglo_p[i];
+		vector_l[i] = nRandom(rng);
 	}
 	end = std::chrono::system_clock::now();
-	std::chrono::duration<float, std::milli> duration3 = end - start;
-	auto totalTimeOpmp = duration3.count();
+	std::chrono::duration<float, std::milli> duration2 = end - start;
+	auto totalTimeOpmp = duration2.count();
 	//------------------------------------------suma Threads---------------------------------------------------------------------------------------
+	
 	sumasParalelas = new uint64_t[totalElementos];
 	for (size_t i = 0; i < numThreads; ++i)
 	{
@@ -110,42 +115,37 @@ int main(int argc, char **argv)
 										   i * (totalElementos) / numThreads,
 										   (i + 1) * (totalElementos) / numThreads));
 	}
-	//Tiempo de suma Threads
+	//-----------------------------------------------------Tiempo de suma Threads-----------------------------------------------------------------
 	start = std::chrono::system_clock::now();
 	for (auto &thr : threads2)
 	{
 		thr->join();
 	}
+	for (size_t i = 0; i < numThreads; i++)
+	{
+		sumaThreads += sumasParalelas[i];
+	}
 	end = std::chrono::system_clock::now();
-	std::chrono::duration<float, std::milli> duration2 = end - start;
-	auto totalTimeThread = duration2.count();
-	//--------------------------------------------Tiempo de sumaSecuencial---------------------------------
-
+	std::chrono::duration<float, std::milli> duration3 = end - start;
+	auto totalTimeThread = duration3.count();
+	//--------------------------------------------Tiempo de sumaSecuencial-----------------------------------------------------------------
 	start = std::chrono::high_resolution_clock::now();
-	llenadoAr(0, totalElementos, limiteInferior, limiteSuperior, 1);
-	end = std::chrono::high_resolution_clock::now();
-	elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-	auto totalTimeSumSerial = elapsed.count();
-	//---------------------------------------------tiempo suma openmp--------------------------------------------------------------
+	sumaSecuencial(0,0,totalElementos);
+	end = std::chrono::system_clock::now();
+	std::chrono::duration<float, std::milli> duration4 = end - start;
+	auto totalTimeSumSerial = duration4.count();
+	//---------------------------------------------tiempo suma openmp----------------------------------------------------------------------
 	uint64_t count= 0;
 	start = std::chrono::high_resolution_clock::now();
 	#pragma omp parallel for reduction(+:count) num_threads(numThreads)
 	for(size_t i = 0; i < totalElementos; ++i){
 		count += vector_l[i];
 	}
+	end = std::chrono::system_clock::now();
+	std::chrono::duration<float, std::milli> duration5 = end - start;
+	auto totalTimeOmp = duration5.count();
 
-	end = std::chrono::high_resolution_clock::now();
-	elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-	auto totalTimeOmp = elapsed.count();
-	//--------------------------------------------suma en secuencia---------------------------------
-	sumaSecuencial(0,0,totalElementos);
 	
-	//--------------------------------------------suma en paralelo---------------------------------
-
-	for (size_t i = 0; i < numThreads; i++)
-	{
-		sumaThreads += sumasParalelas[i];
-	}
 
 	std::cout << "Elementos: " << totalElementos << std::endl;
 	std::cout << "Threads  : " << numThreads << std::endl;
@@ -161,12 +161,12 @@ int main(int argc, char **argv)
 	std::cout << "TiempodeLLenadoSecuencial: " << totalTimeSerial << "[ms]" << std::endl;
 	std::cout << "TiempodeLLenadoParalelo: " << totalTimefilled << "[ms]" << std::endl;
 	std::cout << "TiempodeLLenadoOpenMp: " << totalTimeOpmp  << "[ms]" << std::endl;
-	// std::cout << "SpeedUp Etapa de Llenado: " << (double)totalTimeSerial/totalTimefilled << std::endl;
+    std::cout << "SpeedUp Etapa de Llenado: " << (double)totalTimeSerial/totalTimefilled << std::endl;
 
 	std::cout << "==========Tiempos de Sumado==========" << std::endl;
 	std::cout << "TiempoDeSumadoSecuencial: " << totalTimeSumSerial << "[ms]" << std::endl;
 	std::cout << "TiempoDeSumadoParalelo: " << totalTimeThread << "[ms]" << std::endl;
 	std::cout << "TiempoDeSumadoOpenMp: " << totalTimeOmp << "[ms]" << std::endl;
-	// std::cout << "SpeedUp Etapa de Suma: " << (double)totalTimeSumSerial/totalTimeThread << std::endl;
+    std::cout << "SpeedUp Etapa de Suma: " << (double)totalTimeSumSerial/totalTimeThread << std::endl;
 	return (EXIT_SUCCESS);
 }
