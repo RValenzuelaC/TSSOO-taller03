@@ -139,7 +139,7 @@ int main(int argc, char **argv)
 	start = std::chrono::high_resolution_clock::now();
 	#pragma omp parallel for reduction(+:count) num_threads(numThreads)
 	for(size_t i = 0; i < totalElementos; ++i){
-		count += vector_l[i];
+		count += arreglo_p[i];
 	}
 	end = std::chrono::system_clock::now();
 	std::chrono::duration<float, std::milli> duration5 = end - start;
