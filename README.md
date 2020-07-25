@@ -1,2 +1,2 @@
 # TSSOO-taller03
-##### Raúl  Ignacio Valenzuela Cinto - Raul.valenzuela@alumnos.uv.cl
+##### Autor: Raúl  Ignacio Valenzuela Cinto - Raul.valenzuela@alumnos.uv.cl
